@@ -1042,3 +1042,39 @@ button {
     padding: 20px;
   }
 }
+.admin-login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin-login-form {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--border-color, #333);
+  border-radius: 12px;
+  background: var(--card-background, #171717);
+}
+
+.admin-login-form h1,
+.admin-login-form p {
+  margin-top: 0;
+}
+
+.admin-login-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color, #444);
+  border-radius: 6px;
+  background: var(--input-background, #222);
+  color: inherit;
+}
+
+.admin-login-error {
+  color: #ff7777;
+}

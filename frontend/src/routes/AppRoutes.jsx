@@ -1,6 +1,7 @@
-
 import { Routes, Route, Navigate } from 'react-router-dom'
+
 import MainLayout from '../components/layout/MainLayout'
+
 import Home from '../pages/Home'
 import Shop from '../pages/Shop'
 import About from '../pages/About'
@@ -8,12 +9,18 @@ import Contact from '../pages/Contact'
 import Cart from '../pages/Cart'
 import Checkout from '../pages/Checkout'
 import OrderConfirmation from '../pages/OrderConfirmation'
-import NotFound from '../pages/NotFound'
 import ProductDetails from '../pages/ProductDetails'
+import NotFound from '../pages/NotFound'
+
+import AdminLogin from '../pages/admin/AdminLogin'
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Admin authentication */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Customer storefront */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
@@ -22,16 +29,18 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+
         <Route
           path="/order-confirmation/:trackingToken"
           element={<OrderConfirmation />}
         />
+
         <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<NotFound />} />
       </Route>
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }
 
 export default AppRoutes
-
