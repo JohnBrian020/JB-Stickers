@@ -1,0 +1,126 @@
+
+from flask import Blueprint, request
+
+from schemas.customer_schema import CustomerSchema
+from services.admin_service import (
+    get_dashboard_stats,
+    get_all_orders,
+    get_order_by_id,
+    update_order_status
+)
+from utils.decorators import admin_required
+from utils.responses import success_response, error_response
+
+
+admin_bp = Blueprint(
+    "admin",
+    __name__,
+    url_prefix="/api/admin"
+)
+
+customer_schema = CustomerSchema()
+
+
+def serialize_order(order):
+    return {
+        "id": order.id,
+        "total_amount": str(order.total_amount),
+        "status": order.status,
+        "created_at": (
+            order.created_at.isoformat()
+            if order.created_at else None
+        ),
+        "customer": customer_schema.dump(order.customer),
+        "items": [
+            {
+                "id": item.id,
+                "product_id": item.product_id,
+                "product_name": item.product.name,
+                "quantity": item.quantity,
+                "unit_price": str(item.unit_price),
+                "subtotal": str(
+                    item.unit_price * item.quantity
+                )
+            }
+            for item in order.items
+        ]
+    }
+
+
+@admin_bp.route("/dashboard", methods=["GET"])
+@admin_required
+def dashboard():
+    stats = get_dashboard_stats()
+
+    return success_response(
+        data=stats,
+        message="Dashboard statistics retrieved successfully"
+    )
+
+
+@admin_bp.route("/orders", methods=["GET"])
+@admin_required
+def list_orders():
+    status = request.args.get("status")
+
+    orders = get_all_orders(status=status)
+
+    orders_data = [
+        serialize_order(order)
+        for order in orders
+    ]
+
+    return success_response(
+        data=orders_data,
+        message="Orders retrieved successfully"
+    )
+
+
+@admin_bp.route("/orders/<int:order_id>", methods=["GET"])
+@admin_required
+def order_details(order_id):
+    order = get_order_by_id(order_id)
+
+    if order is None:
+        return error_response("Order not found", 404)
+
+    return success_response(
+        data=serialize_order(order),
+        message="Order retrieved successfully"
+    )
+
+
+@admin_bp.route(
+    "/orders/<int:order_id>/status",
+    methods=["PATCH"]
+)
+@admin_required
+def change_order_status(order_id):
+    order = get_order_by_id(order_id)
+
+    if order is None:
+        return error_response("Order not found", 404)
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return error_response("A valid JSON object is required")
+
+    new_status = data.get("status")
+
+    if not isinstance(new_status, str) or not new_status.strip():
+        return error_response("Order status is required")
+
+    try:
+        order = update_order_status(
+            order,
+            new_status.strip().lower()
+        )
+
+        return success_response(
+            data=serialize_order(order),
+            message="Order status updated successfully"
+        )
+
+    except ValueError as error:
+        return error_response(str(error), 400)
