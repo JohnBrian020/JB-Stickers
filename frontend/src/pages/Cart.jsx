@@ -109,13 +109,9 @@ function Cart() {
           <strong>KSh {cartTotal.toFixed(2)}</strong>
         </div>
 
-        <button
-          type="button"
-          className="product-add-button"
-          disabled
-        >
-          Checkout coming next
-        </button>
+        <Link to="/checkout" className="product-add-button">
+            Proceed to checkout
+        </Link>
       </div>
 
       <Link to="/shop" className="back-to-shop">
