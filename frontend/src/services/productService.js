@@ -1,3 +1,4 @@
+
 import { apiRequest } from './api'
 
 export async function getProducts() {
@@ -38,4 +39,17 @@ export async function deleteProduct(productId) {
   return apiRequest(`/products/${productId}`, {
     method: 'DELETE',
   })
+}
+
+// Upload product image to Cloudinary through Flask
+export async function uploadProductImage(productId, imageFile) {
+  const formData = new FormData()
+  formData.append('image', imageFile)
+
+  const response = await apiRequest(`/products/${productId}/image`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  return response.data
 }
