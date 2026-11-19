@@ -1078,3 +1078,133 @@ button {
 .admin-login-error {
   color: #ff7777;
 }
+
+/* Order tracking */
+.tracking-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tracking-heading h2 {
+  margin: 0 0 8px;
+}
+
+.order-status-label {
+  margin: 0;
+  text-transform: capitalize;
+  opacity: 0.8;
+}
+
+.order-timeline {
+  margin-top: 32px;
+}
+
+.order-timeline h3 {
+  margin-bottom: 24px;
+}
+
+.timeline-step {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 28px;
+  opacity: 0.5;
+}
+
+.timeline-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  width: 2px;
+  height: calc(100% - 34px);
+  background: var(--border-color, #444);
+}
+
+.timeline-marker {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-color, #555);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.timeline-content strong {
+  display: block;
+  margin: 4px 0;
+}
+
+.timeline-content p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.timeline-step.completed,
+.timeline-step.current {
+  opacity: 1;
+}
+
+.timeline-step.completed .timeline-marker,
+.timeline-step.current .timeline-marker {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #111;
+}
+
+.timeline-step.completed:not(:last-child)::after {
+  background: var(--orange);
+}
+
+.timeline-current-label {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--orange);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.order-summary-details {
+  margin-top: 32px;
+}
+
+.tracking-error {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #a33;
+  border-radius: 6px;
+  color: #ff7777;
+}
+
+.tracking-cancelled {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid #a33;
+  border-radius: 8px;
+  color: #ff7777;
+}
+
+.tracking-cancelled h3 {
+  margin-top: 0;
+}
+
+.tracking-link-section h3 {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .tracking-heading {
+    align-items: flex-start;
+  }
+
+  .tracking-heading button {
+    width: 100%;
+  }
+}
