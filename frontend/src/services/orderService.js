@@ -16,3 +16,31 @@ export async function getTrackedOrder(trackingToken) {
 
   return response.data
 }
+
+// Admin: retrieve all orders, optionally filtered by status.
+export async function getAdminOrders(status = '') {
+  const query = status
+    ? `?status=${encodeURIComponent(status)}`
+    : ''
+
+  const response = await apiRequest(`/admin/orders${query}`)
+
+  return response.data
+}
+
+// Admin: retrieve one order.
+export async function getAdminOrderById(orderId) {
+  const response = await apiRequest(`/admin/orders/${orderId}`)
+
+  return response.data
+}
+
+// Admin: update an order's status.
+export async function updateAdminOrderStatus(orderId, status) {
+  const response = await apiRequest(`/admin/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+
+  return response.data
+}
