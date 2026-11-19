@@ -2,6 +2,7 @@
 from flask import Blueprint, request
 
 from schemas.customer_schema import CustomerSchema
+from services.email_service import send_order_status_update
 from services.admin_service import (
     get_dashboard_stats,
     get_all_orders,
@@ -112,10 +113,21 @@ def change_order_status(order_id):
         return error_response("Order status is required")
 
     try:
-        order = update_order_status(
-            order,
-            new_status.strip().lower()
-        )
+        new_status = new_status.strip().lower()
+        previous_status = order.status
+
+        order = update_order_status(order, new_status)
+
+        if (
+            previous_status != order.status
+            and order.status in {
+                "confirmed",
+                "shipped",
+                "delivered",
+                "cancelled"
+            }
+        ):
+            send_order_status_update(order, order.status)
 
         return success_response(
             data=serialize_order(order),
