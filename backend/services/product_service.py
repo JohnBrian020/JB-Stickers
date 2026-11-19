@@ -4,8 +4,11 @@ from extensions import db
 from models import Product
 
 
-def get_all_products(search=None, category=None):
-    query = Product.query.filter_by(is_active=True)
+def get_all_products(search=None, category=None, include_inactive=False):
+    query = Product.query
+
+    if not include_inactive:
+        query = query.filter_by(is_active=True)
 
     if search:
         query = query.filter(Product.name.ilike(f"%{search}%"))
@@ -14,9 +17,8 @@ def get_all_products(search=None, category=None):
         query = query.filter_by(category=category)
 
     return query.order_by(Product.created_at.desc()).all()
-
-
 def get_product_by_id(product_id):
+
     return db.session.get(Product, product_id)
 
 
