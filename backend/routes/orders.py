@@ -1,11 +1,12 @@
 
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from marshmallow import ValidationError
 
 from extensions import db
 from models import Order
 from schemas.order_schema import OrderInputSchema
 from schemas.customer_schema import CustomerSchema
+from services.email_service import send_order_confirmation
 from services.order_service import create_order
 from utils.responses import success_response, error_response
 from utils.decorators import admin_required
@@ -56,8 +57,15 @@ def place_order():
 
     try:
         order_data = order_input_schema.load(data)
-
+	
         order = create_order(order_data)
+        try:
+            send_order_confirmation(order)
+        except Exception:
+            current_app.logger.exception(
+                "Order confirmation email failed for order #%s",
+                order.id
+        )
 
         order_data = serialize_order(order)
 
