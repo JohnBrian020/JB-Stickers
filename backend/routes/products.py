@@ -23,6 +23,15 @@ products_bp = Blueprint(
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
+@products_bp.route("/admin", methods=["GET"])
+@admin_required
+def list_admin_products():
+    products = get_all_products(include_inactive=True)
+
+    return success_response(
+        data=products_schema.dump(products),
+        message="Admin products retrieved successfully"
+    )
 
 @products_bp.route("", methods=["GET"])
 def list_products():
