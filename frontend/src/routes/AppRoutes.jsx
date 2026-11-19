@@ -14,6 +14,8 @@ import OrderConfirmation from '../pages/OrderConfirmation'
 import ProductDetails from '../pages/ProductDetails'
 import NotFound from '../pages/NotFound'
 import ManageProducts from '../pages/admin/ManageProducts'
+import ManageOrders from '../pages/admin/ManageOrders'
+import OrderDetails from '../pages/admin/OrderDetails'
 
 import AdminLogin from '../pages/admin/AdminLogin'
 import Dashboard from '../pages/admin/Dashboard'
@@ -29,6 +31,8 @@ function AppRoutes() {
         <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="orders" element={<ManageOrders />} />
+            <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route path="products" element={<ManageProducts />} />
         </Route>
       </Route>
