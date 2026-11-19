@@ -42,3 +42,10 @@ class Config:
         "FRONTEND_URL",
         "http://localhost:5173"
     )
+        # Cloudinary image storage
+    CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+
+    # Maximum upload size: 5 MB
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
