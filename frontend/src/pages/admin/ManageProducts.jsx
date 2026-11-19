@@ -1,10 +1,11 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   getAdminProducts,
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadProductImage,
 } from '../../services/productService'
 
 const initialForm = {
@@ -17,15 +18,44 @@ const initialForm = {
   is_active: true,
 }
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]
+
 function ManageProducts() {
+  const imageInputRef = useRef(null)
+
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(initialForm)
   const [editingId, setEditingId] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+
+  const imagePreview = useMemo(() => {
+    return selectedImage
+      ? URL.createObjectURL(selectedImage)
+      : form.image_url
+  }, [selectedImage, form.image_url])
+
+  useEffect(() => {
+    if (!selectedImage) return undefined
+
+    const previewUrl = imagePreview
+
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [selectedImage, imagePreview])
 
   async function loadProducts() {
     try {
@@ -67,7 +97,7 @@ function ManageProducts() {
       ignore = true
     }
   }, [])
-  
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) =>
       product.name.toLowerCase().includes(search.toLowerCase())
@@ -83,13 +113,48 @@ function ManageProducts() {
     }))
   }
 
+  function handleImageChange(event) {
+    const file = event.target.files?.[0]
+
+    if (!file) return
+
+    setError('')
+    setMessage('')
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setSelectedImage(null)
+      event.target.value = ''
+      setError('Only JPG, PNG and WebP images are allowed.')
+      return
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setSelectedImage(null)
+      event.target.value = ''
+      setError('Image size must not exceed 5 MB.')
+      return
+    }
+
+    setSelectedImage(file)
+  }
+
   function resetForm() {
     setForm(initialForm)
     setEditingId(null)
+    setSelectedImage(null)
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
   }
 
   function handleEdit(product) {
     setEditingId(product.id)
+    setSelectedImage(null)
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
 
     setForm({
       name: product.name || '',
@@ -117,20 +182,40 @@ function ManageProducts() {
       name: form.name.trim(),
       description: form.description.trim() || null,
       price: Number(form.price),
-      image_url: form.image_url.trim() || null,
+      image_url: form.image_url || null,
       category: form.category.trim() || null,
       stock: Number(form.stock),
       is_active: form.is_active,
     }
 
     try {
+      let savedProduct
+
       if (editingId) {
-        await updateProduct(editingId, productData)
-        setMessage('Product updated successfully.')
+        savedProduct = await updateProduct(editingId, productData)
       } else {
-        await createProduct(productData)
-        setMessage('Product created successfully.')
+        savedProduct = await createProduct(productData)
       }
+
+      if (selectedImage) {
+        try {
+          await uploadProductImage(savedProduct.id, selectedImage)
+        } catch (uploadError) {
+          setEditingId(savedProduct.id)
+          setError(
+            `Product saved, but image upload failed: ${uploadError.message}`
+          )
+          return
+        }
+      }
+
+      setMessage(
+        selectedImage
+          ? 'Product and image saved successfully.'
+          : editingId
+            ? 'Product updated successfully.'
+            : 'Product created successfully.'
+      )
 
       resetForm()
       await loadProducts()
@@ -218,16 +303,40 @@ function ManageProducts() {
             />
           </label>
 
-          <label className="admin-product-full-width">
-            Image URL
+          <div className="admin-product-full-width">
+            <label htmlFor="product-image">
+              Product Image
+            </label>
+
             <input
-              name="image_url"
-              type="url"
-              value={form.image_url}
-              onChange={handleChange}
-              placeholder="https://example.com/sticker.jpg"
+              ref={imageInputRef}
+              id="product-image"
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
             />
-          </label>
+
+            <small>
+              JPG, PNG or WebP. Maximum file size: 5 MB.
+            </small>
+
+            {imagePreview && (
+              <div className="admin-product-image-preview">
+                <img
+                  src={imagePreview}
+                  alt="Product preview"
+                />
+              </div>
+            )}
+
+            {selectedImage && (
+              <p>Selected: {selectedImage.name}</p>
+            )}
+
+            {editingId && !selectedImage && form.image_url && (
+              <p>Choose another image to replace the current one.</p>
+            )}
+          </div>
 
           <label className="admin-product-full-width">
             Description
@@ -268,11 +377,15 @@ function ManageProducts() {
       </form>
 
       {message && (
-        <p className="admin-success" role="status">{message}</p>
+        <p className="admin-success" role="status">
+          {message}
+        </p>
       )}
 
       {error && (
-        <p className="admin-error" role="alert">{error}</p>
+        <p className="admin-error" role="alert">
+          {error}
+        </p>
       )}
 
       <div className="admin-products-toolbar">
@@ -322,11 +435,13 @@ function ManageProducts() {
                   <td>{product.stock}</td>
 
                   <td>
-                    <span className={
-                      product.is_active
-                        ? 'admin-status-active'
-                        : 'admin-status-inactive'
-                    }>
+                    <span
+                      className={
+                        product.is_active
+                          ? 'admin-status-active'
+                          : 'admin-status-inactive'
+                      }
+                    >
                       {product.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
