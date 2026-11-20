@@ -90,7 +90,7 @@ def send_order_confirmation(order):
     <html>
     <body style="font-family: Arial, sans-serif; color: #333;">
         <div style="max-width: 600px; margin: auto; padding: 24px;">
-            <h1 style="color: #e85d75;">XOXO Stickers</h1>
+            <h1 style="color: #e85d75;">❌⭕❌❌ Stickers</h1>
 
             <h2>Thank you for your order, {customer_name}!</h2>
 
@@ -125,7 +125,7 @@ def send_order_confirmation(order):
                 </a>
             </p>
 
-            <p>Thank you for shopping with XOXO Stickers!</p>
+            <p>Thank you for shopping with ❌⭕❌❌ Stickers!</p>
         </div>
     </body>
     </html>
@@ -147,7 +147,7 @@ Total: {total}
 Track your order:
 {tracking_url}
 
-Thank you for shopping with XOXO Stickers!
+Thank you for shopping with ❌⭕❌❌ Stickers!
 """
 
     return send_email(
@@ -202,7 +202,7 @@ def send_order_status_update(order, new_status):
     <html>
     <body style="font-family: Arial, sans-serif; color: #333;">
         <div style="max-width: 600px; margin: auto; padding: 24px;">
-            <h1 style="color: #e85d75;">XOXO Stickers</h1>
+            <h1 style="color: #e85d75;">❌⭕❌❌ Stickers</h1>
 
             <h2>Hello {customer_name}!</h2>
 
@@ -226,7 +226,7 @@ def send_order_status_update(order, new_status):
                 </a>
             </p>
 
-            <p>Thank you for shopping with XOXO Stickers!</p>
+            <p>Thank you for shopping with ❌⭕❌❌ Stickers!</p>
         </div>
     </body>
     </html>
@@ -245,7 +245,7 @@ Current status: {new_status.title()}
 Track your order:
 {tracking_url}
 
-Thank you for shopping with XOXO Stickers!
+Thank you for shopping with ❌⭕❌❌ Stickers!
 """
 
     return send_email(

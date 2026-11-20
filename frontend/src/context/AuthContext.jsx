@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -47,9 +46,13 @@ export function AuthProvider({ children }) {
     }
   }
 
+  function updateAdmin(adminData) {
+    setAdmin(adminData)
+  }
+
   return (
     <AuthContext.Provider
-      value={{ admin, loading, login, logout }}
+      value={{ admin, loading, login, logout, updateAdmin }}
     >
       {children}
     </AuthContext.Provider>

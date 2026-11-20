@@ -697,3 +697,80 @@
     padding: 16px;
   }
 }
+/* Admin account settings */
+
+.admin-account-page {
+  max-width: 850px;
+}
+
+.admin-account-card {
+  padding: 26px;
+  margin-bottom: 24px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #171717;
+}
+
+.admin-account-card-heading {
+  margin-bottom: 24px;
+}
+
+.admin-account-card-heading h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.admin-account-card-heading p {
+  margin: 0;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.admin-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-account-form label {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.admin-account-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #222;
+  color: #fff;
+  font: inherit;
+}
+
+.admin-account-form input:focus {
+  outline: 2px solid #ff8a3d;
+  outline-offset: 1px;
+  border-color: #ff8a3d;
+}
+
+.admin-account-form .admin-primary-button {
+  align-self: flex-start;
+  margin-top: 12px;
+}
+
+.admin-account-form .admin-error,
+.admin-account-form .admin-success {
+  margin: 4px 0;
+}
+
+@media (max-width: 600px) {
+  .admin-account-card {
+    padding: 18px;
+  }
+
+  .admin-account-form .admin-primary-button {
+    width: 100%;
+  }
+}

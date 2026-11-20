@@ -12,7 +12,6 @@ def admin_required(function):
 
     @wraps(function)
     def decorated_function(*args, **kwargs):
-
         admin_id = session.get("admin_id")
 
         if admin_id is None:
@@ -23,11 +22,14 @@ def admin_required(function):
 
         admin = db.session.get(Admin, admin_id)
 
-        if admin is None:
+        if (
+            admin is None
+            or session.get("session_version") != admin.session_version
+        ):
             session.clear()
 
             return error_response(
-                "Administrator authentication required",
+                "Your administrator session has expired. Please log in again.",
                 401
             )
 

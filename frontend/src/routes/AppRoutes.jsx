@@ -19,6 +19,7 @@ import OrderDetails from '../pages/admin/OrderDetails'
 
 import AdminLogin from '../pages/admin/AdminLogin'
 import Dashboard from '../pages/admin/Dashboard'
+import AccountSettings from '../pages/admin/AccountSettings'
 
 function AppRoutes() {
   return (
@@ -34,6 +35,7 @@ function AppRoutes() {
             <Route path="orders" element={<ManageOrders />} />
             <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route path="products" element={<ManageProducts />} />
+            <Route path="account" element={<AccountSettings />} />
         </Route>
       </Route>
 

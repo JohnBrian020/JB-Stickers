@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import Footer from './Footer'
 import { useCart } from '../../context/CartContext'
@@ -11,9 +11,31 @@ const navigation = [
 ]
 
 function MainLayout() {
-  const [lightMode, setLightMode] = useState(false)
+  const [lightMode, setLightMode] = useState(() => {
+    try {
+      return localStorage.getItem('jb-stickers-theme') === 'light'
+    } catch {
+      return false
+    }
+  })
+
   const [menuOpen, setMenuOpen] = useState(false)
   const { cartCount } = useCart()
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'jb-stickers-theme',
+        lightMode ? 'light' : 'dark',
+      )
+    } catch {
+      // Theme still works for the current session if storage is unavailable.
+    }
+  }, [lightMode])
+
+  const toggleTheme = () => {
+    setLightMode((currentMode) => !currentMode)
+  }
 
   return (
     <div
@@ -22,7 +44,7 @@ function MainLayout() {
     >
       <aside className={`sidebar ${menuOpen ? 'sidebar-open' : ''}`}>
         <Link to="/" className="brand">
-          <span className="brand-symbol">XOXO</span>
+          <span className="brand-symbol">❌⭕❌❌</span>
           <span className="brand-name">Stickers</span>
         </Link>
 
@@ -55,7 +77,8 @@ function MainLayout() {
 
           <button
             className="sidebar-action theme-toggle"
-            onClick={() => setLightMode(!lightMode)}
+            onClick={toggleTheme}
+            aria-label={`Switch to ${lightMode ? 'dark' : 'light'} mode`}
           >
             <span className="nav-icon">
               {lightMode ? '☾' : '☼'}
@@ -68,7 +91,7 @@ function MainLayout() {
       <div className="main-column">
         <header className="mobile-header">
           <Link to="/" className="brand">
-            <span className="brand-symbol">XOXO</span>
+            <span className="brand-symbol">❌⭕❌❌</span>
             <span className="brand-name">Stickers</span>
           </Link>
 

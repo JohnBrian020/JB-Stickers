@@ -4,7 +4,7 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div>
-        <strong>XOXO Stickers</strong>
+        <strong>❌⭕❌❌ Stickers</strong>
         <p>Express yourself. One sticker at a time.</p>
       </div>
 
@@ -16,7 +16,7 @@ function Footer() {
       </div>
 
       <p className="copyright">
-        © {new Date().getFullYear()} XOXO Stickers. All rights reserved.
+        © {new Date().getFullYear()} ❌⭕❌❌ Stickers. All rights reserved.
       </p>
     </footer>
   )

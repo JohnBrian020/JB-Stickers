@@ -1,11 +1,19 @@
-
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 function AdminLogin() {
   const { admin, loading, login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const [lightMode] = useState(() => {
+    try {
+      return localStorage.getItem('jb-stickers-theme') === 'light'
+    } catch {
+      return false
+    }
+  })
 
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -37,12 +45,21 @@ function AdminLogin() {
   }
 
   return (
-    <main className="admin-login-page">
+    <main
+      className="admin-login-page"
+      data-theme={lightMode ? 'light' : 'dark'}
+    >
       <form className="admin-login-form" onSubmit={handleSubmit}>
-        <span className="eyebrow">XOXO STICKERS</span>
+        <span className="eyebrow">❌⭕❌❌ STICKERS</span>
 
         <h1>Admin Login</h1>
         <p>Sign in to manage your store.</p>
+
+        {location.state?.message && (
+          <p className="admin-success" role="status">
+            {location.state.message}
+          </p>
+        )}
 
         <label htmlFor="identifier">Email or username</label>
         <input

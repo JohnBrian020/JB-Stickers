@@ -50,6 +50,12 @@ button {
   --main-text: #f8f8f8;
   --muted-text: #a5a5a5;
   --line: #292929;
+
+  /* Theme-aware checkout form colors */
+  --border-color: var(--line);
+  --card-background: var(--card-bg);
+  --input-background: #222222;
+
   color: var(--main-text);
 }
 
@@ -60,6 +66,9 @@ button {
   --main-text: #171717;
   --muted-text: #686868;
   --line: #dedede;
+
+  /* Light theme checkout form colors */
+  --input-background: #f2f2f2;
 }
 
 .sidebar {
@@ -1207,4 +1216,27 @@ button {
   .tracking-heading button {
     width: 100%;
   }
+}
+
+/* Admin login theme */
+.admin-login-page {
+  --border-color: #292929;
+  --card-background: #171717;
+  --input-background: #222222;
+
+  background: #080808;
+  color: #f8f8f8;
+}
+
+.admin-login-page[data-theme='light'] {
+  --border-color: #dedede;
+  --card-background: #ffffff;
+  --input-background: #f2f2f2;
+
+  background: #f7f7f7;
+  color: #171717;
+}
+
+.admin-login-page .admin-login-form label {
+  color: inherit;
 }

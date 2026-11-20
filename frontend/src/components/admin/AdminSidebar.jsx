@@ -4,7 +4,7 @@ function AdminSidebar() {
   return (
     <aside className="admin-sidebar">
       <div className="admin-brand">
-        <h2>XOXO STICKERS</h2>
+        <h2>❌⭕❌❌ STICKERS</h2>
         <span>ADMIN PANEL</span>
       </div>
 
@@ -19,6 +19,10 @@ function AdminSidebar() {
 
         <NavLink to="/admin/products">
           Manage Products
+        </NavLink>
+
+        <NavLink to="/admin/account">
+          Account Settings
         </NavLink>
       </nav>
 

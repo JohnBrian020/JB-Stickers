@@ -1,4 +1,3 @@
-
 import { apiRequest } from './api'
 
 export async function loginAdmin(identifier, password) {
@@ -18,5 +17,21 @@ export async function getCurrentAdmin() {
 export async function logoutAdmin() {
   return apiRequest('/auth/logout', {
     method: 'POST',
+  })
+}
+
+export async function updateAdminProfile(profileData) {
+  const response = await apiRequest('/auth/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(profileData),
+  })
+
+  return response.data
+}
+
+export async function updateAdminPassword(passwordData) {
+  return apiRequest('/auth/password', {
+    method: 'PATCH',
+    body: JSON.stringify(passwordData),
   })
 }
