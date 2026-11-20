@@ -35,14 +35,13 @@ def upload_product_image(image_file):
     if image_file is None or not image_file.filename:
         raise ValueError("Please select an image to upload.")
 
-    image_data = image_file.read()
+    image_data = image_file.stream.read(MAX_IMAGE_SIZE + 1)
 
     if not image_data:
         raise ValueError("The selected image is empty.")
 
     if len(image_data) > MAX_IMAGE_SIZE:
         raise ValueError("Image size must not exceed 5 MB.")
-
     try:
         with Image.open(BytesIO(image_data)) as image:
             if image.format not in ALLOWED_IMAGE_FORMATS:

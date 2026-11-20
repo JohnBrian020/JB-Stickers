@@ -2,6 +2,7 @@ import secrets
 from decimal import Decimal
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import update
 
 from extensions import db
 from models import Customer, Product, Order, OrderItem
@@ -94,10 +95,39 @@ def create_order(order_data):
             db.session.add(order)
             db.session.flush()
 
-            # Create order items and reduce stock.
+            # Create order items and atomically reduce stock.
             for product_id, quantity in quantities.items():
 
                 product = product_map[product_id]
+
+                result = db.session.execute(
+                    update(Product)
+                    .where(
+                        Product.id == product_id,
+                        Product.is_active.is_(True),
+                        Product.stock >= quantity
+                    )
+                    .values(stock=Product.stock - quantity)
+                    .execution_options(synchronize_session=False)
+                )
+
+                if result.rowcount != 1:
+                    current_product = (
+                        Product.query
+                        .populate_existing()
+                        .filter_by(id=product_id)
+                        .first()
+                    )
+
+                    if current_product is None or not current_product.is_active:
+                        raise ValueError(
+                            f"Product {product_id} is unavailable."
+                        )
+
+                    raise ValueError(
+                        f"Insufficient stock for {current_product.name}. "
+                        f"Available: {current_product.stock}, requested: {quantity}."
+                    )
 
                 order_item = OrderItem(
                     order_id=order.id,
@@ -107,11 +137,6 @@ def create_order(order_data):
                 )
 
                 db.session.add(order_item)
-
-                product.stock -= quantity
-
-            db.session.flush()
-
         return order
 
     except IntegrityError as error:

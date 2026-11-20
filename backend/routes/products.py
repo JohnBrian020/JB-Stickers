@@ -95,10 +95,16 @@ def add_product():
         )
 
     except IntegrityError:
-        from extensions import db
-        db.session.rollback()
+        current_app.logger.exception(
+            "Database integrity error while creating product"
+        )
         return error_response("Could not create product", 400)
 
+    except Exception:
+        current_app.logger.exception(
+            "Unexpected error while creating product"
+        )
+        return error_response("Could not create product", 500)
 
 @products_bp.route("/<int:product_id>", methods=["PATCH"])
 @admin_required
@@ -131,10 +137,16 @@ def edit_product(product_id):
         )
 
     except IntegrityError:
-        from extensions import db
-        db.session.rollback()
+        current_app.logger.exception(
+            "Database integrity error while updating product"
+        )
         return error_response("Could not update product", 400)
 
+    except Exception:
+        current_app.logger.exception(
+            "Unexpected error while updating product"
+        )
+        return error_response("Could not update product", 500)
 
 
 @products_bp.route("/<int:product_id>", methods=["DELETE"])
@@ -154,7 +166,6 @@ def remove_product(product_id):
         return error_response(str(error), 409)
 
     except Exception:
-        db.session.rollback()
         current_app.logger.exception(
             "Failed to delete product from database"
         )
