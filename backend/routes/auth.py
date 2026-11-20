@@ -1,7 +1,8 @@
+import secrets
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, make_response
 
-from extensions import db
+from extensions import db, limiter
 from models import Admin
 from services.auth_service import authenticate_admin
 from utils.responses import success_response, error_response
@@ -14,9 +15,29 @@ auth_bp = Blueprint(
 )
 
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
+@auth_bp.route("/csrf-token", methods=["GET"])
+def get_csrf_token():
+    token = session.get("csrf_token")
 
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_token"] = token
+
+    response = make_response(
+        success_response(
+            data={"csrf_token": token},
+            message="CSRF token retrieved"
+        )
+    )
+
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+
+    return response
+
+@auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5 per minute")
+def login():
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict):
@@ -42,16 +63,18 @@ def login():
             401
         )
 
-    # Clear any previous session before creating a new one.
+    # Start a fresh authenticated session and rotate the CSRF token.
     session.clear()
     session["admin_id"] = admin.id
+    session["csrf_token"] = secrets.token_urlsafe(32)
     session.permanent = True
 
     return success_response(
         data={
             "id": admin.id,
             "username": admin.username,
-            "email": admin.email
+            "email": admin.email,
+            "csrf_token": session["csrf_token"]
         },
         message="Login successful"
     )
@@ -59,7 +82,6 @@ def login():
 
 @auth_bp.route("/me", methods=["GET"])
 def current_admin():
-
     admin_id = session.get("admin_id")
 
     if admin_id is None:
@@ -83,9 +105,12 @@ def current_admin():
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
-
     session.clear()
 
+    # Create a fresh anonymous session with a new CSRF token.
+    session["csrf_token"] = secrets.token_urlsafe(32)
+
     return success_response(
+        data={"csrf_token": session["csrf_token"]},
         message="Logout successful"
     )
