@@ -27,17 +27,23 @@ class Config:
         "sqlite:///jb_stickers.db"
     )
 
-    # Normalize older PostgreSQL URL formats.
+    # Explicitly use the installed psycopg2 PostgreSQL driver.
     if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
             "postgres://",
+            "postgresql+psycopg2://",
+            1
+        )
+    elif SQLALCHEMY_DATABASE_URI.startswith("postgresql://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
             "postgresql://",
+            "postgresql+psycopg2://",
             1
         )
 
     # Production must use PostgreSQL.
     if APP_ENV == "production" and not SQLALCHEMY_DATABASE_URI.startswith(
-        "postgresql://"
+        "postgresql+psycopg2://"
     ):
         raise RuntimeError(
             "A PostgreSQL DATABASE_URL must be configured in production."
