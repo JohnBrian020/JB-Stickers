@@ -15,6 +15,7 @@ class TestConfig:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_SAMESITE = "Lax"
+    RATELIMIT_STORAGE_URI = "memory://"
 
 
 @pytest.fixture

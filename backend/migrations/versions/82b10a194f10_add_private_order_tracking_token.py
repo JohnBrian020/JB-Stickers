@@ -31,7 +31,7 @@ def downgrade():
         # WARNING: constraint name is None; this directive will fail as
         # rendered.  Add a name, or use a naming convention; see
         # https://alembic.sqlalchemy.org/en/latest/naming.html
-        batch_op.drop_constraint(None, type_='unique')
+        batch_op.drop_constraint('uq_orders_tracking_token', type_='unique')
         batch_op.drop_column('tracking_token')
 
     # ### end Alembic commands ###

@@ -27,13 +27,29 @@ class Config:
         "sqlite:///jb_stickers.db"
     )
 
+    # Normalize older PostgreSQL URL formats.
+    if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+            "postgres://",
+            "postgresql://",
+            1
+        )
+
+    # Production must use PostgreSQL.
+    if APP_ENV == "production" and not SQLALCHEMY_DATABASE_URI.startswith(
+        "postgresql://"
+    ):
+        raise RuntimeError(
+            "A PostgreSQL DATABASE_URL must be configured in production."
+        )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_COOKIE_HTTPONLY = True
 
     SESSION_COOKIE_SAMESITE = os.getenv(
         "SESSION_COOKIE_SAMESITE",
-        "Lax"
+        "None" if APP_ENV == "production" else "Lax"
     )
 
     SESSION_COOKIE_SECURE = (

@@ -26,3 +26,5 @@ cloudinary==1.47.0
 Pillow==13.0.0
 Flask-Limiter==4.1.1
 redis==8.1.0
+gunicorn==27.0.1
+psycopg2-binary==2.9.13
