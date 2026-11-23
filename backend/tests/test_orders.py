@@ -5,6 +5,7 @@ import pytest
 from extensions import db
 from models import Product, Order, OrderItem, Customer
 from services.order_service import create_order
+from services.admin_service import update_order_status
 
 
 def create_test_product(
@@ -129,3 +130,74 @@ def test_order_rejects_nonexistent_product(app):
             create_order(make_order_data(99999))
 
         assert Order.query.count() == 0
+
+def test_cancelling_order_restores_stock(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+
+        product = db.session.get(Product, product_id)
+        assert product.stock == 7
+
+        update_order_status(order, "cancelled")
+
+        product = db.session.get(Product, product_id)
+        order = db.session.get(Order, order.id)
+
+        assert product.stock == 10
+        assert order.status == "cancelled"
+
+
+def test_cancelling_order_twice_does_not_restore_stock_twice(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+
+        update_order_status(order, "cancelled")
+        update_order_status(order, "cancelled")
+
+        product = db.session.get(Product, product_id)
+
+        assert product.stock == 10
+
+
+def test_cancelling_shipped_order_is_rejected(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+
+        update_order_status(order, "shipped")
+
+        with pytest.raises(ValueError, match="cannot be cancelled"):
+            update_order_status(order, "cancelled")
+
+        product = db.session.get(Product, product_id)
+
+        assert product.stock == 7
+
+
+def test_cancelled_order_cannot_be_reopened(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+
+        update_order_status(order, "cancelled")
+
+        with pytest.raises(ValueError, match="cannot be reopened"):
+            update_order_status(order, "confirmed")
+
+        product = db.session.get(Product, product_id)
+
+        assert product.stock == 10

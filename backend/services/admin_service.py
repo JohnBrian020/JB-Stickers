@@ -1,8 +1,7 @@
-
 from sqlalchemy import func
 
 from extensions import db
-from models import Order
+from models import Order, Product
 
 
 ALLOWED_ORDER_STATUSES = {
@@ -30,7 +29,6 @@ def get_dashboard_stats():
         status="cancelled"
     ).count()
 
-    # Exclude cancelled orders from the order value.
     order_value = db.session.query(
         func.coalesce(func.sum(Order.total_amount), 0)
     ).filter(
@@ -66,7 +64,64 @@ def update_order_status(order, new_status):
             + ", ".join(sorted(ALLOWED_ORDER_STATUSES))
         )
 
-    order.status = new_status
-    db.session.commit()
+    try:
+        # Lock the order while changing its status.
+        locked_order = (
+            Order.query
+            .filter_by(id=order.id)
+            .with_for_update()
+            .first()
+        )
 
-    return order
+        if locked_order is None:
+            raise ValueError("Order not found.")
+
+        previous_status = locked_order.status
+
+        # Do not process the same status transition twice.
+        if previous_status == new_status:
+            return locked_order
+
+        # Cancelled orders cannot be reopened.
+        if previous_status == "cancelled":
+            raise ValueError(
+                "Cancelled orders cannot be reopened."
+            )
+
+        # Do not return stock for orders already shipped or delivered.
+        if new_status == "cancelled" and previous_status in {
+            "shipped",
+            "delivered"
+        }:
+            raise ValueError(
+                "Shipped or delivered orders cannot be cancelled."
+            )
+
+        # Restore stock when an order is cancelled.
+        if new_status == "cancelled":
+            for item in locked_order.items:
+
+                product = (
+                    Product.query
+                    .filter_by(id=item.product_id)
+                    .with_for_update()
+                    .first()
+                )
+
+                if product is None:
+                    raise ValueError(
+                        f"Product {item.product_id} not found."
+                    )
+
+                product.stock += item.quantity
+
+        locked_order.status = new_status
+
+        # Save the stock restoration and status change together.
+        db.session.commit()
+
+        return locked_order
+
+    except Exception:
+        db.session.rollback()
+        raise
