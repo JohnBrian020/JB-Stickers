@@ -186,6 +186,57 @@ function OrderDetails() {
         </div>
       </div>
 
+      <div className="admin-order-card">
+        <h2>Payment Information</h2>
+
+        <p>
+          <strong>Payment Method:</strong>{' '}{order.payments?.length > 0 ? 'M-Pesa' : 'Not recorded'}
+        </p>
+
+        <p>
+          <strong>Payment Status:</strong>{' '}
+          <span className={`order-status status-${order.payment_status || 'unpaid'}`}>
+            {order.payment_status || 'unpaid'}
+          </span>
+        </p>
+
+        {order.payments?.length > 0 ? (
+          order.payments.map((payment) => (
+            <div key={payment.id} className="admin-payment-record">
+              <p>
+                <strong>Amount:</strong> {formatCurrency(payment.amount)}
+              </p>
+
+              <p>
+                <strong>Phone Number:</strong> {payment.phone_number || 'N/A'}
+              </p>
+
+              <p>
+                <strong>Transaction Status:</strong>{' '}
+                {payment.status || 'N/A'}
+              </p>
+
+              <p>
+                <strong>M-Pesa Receipt:</strong>{' '}
+                {payment.mpesa_receipt_number || 'Not available'}
+              </p>
+
+              <p>
+                <strong>Payment Record Created:</strong>{' '}
+                {formatDate(payment.created_at)}
+              </p>
+
+              <p>
+                <strong>Last Updated:</strong>{' '}
+                {formatDate(payment.updated_at)}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p>No M-Pesa payment record is available for this order.</p>
+        )}
+      </div>
+
       <div className="admin-order-card admin-order-items">
         <h2>Ordered Products</h2>
 

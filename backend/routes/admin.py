@@ -22,8 +22,8 @@ admin_bp = Blueprint(
 customer_schema = CustomerSchema()
 
 
-def serialize_order(order):
-    return {
+def serialize_order(order, include_payments=False):
+    data = {
         "id": order.id,
         "total_amount": str(order.total_amount),
         "status": order.status,
@@ -46,6 +46,30 @@ def serialize_order(order):
             for item in order.items
         ]
     }
+
+    if include_payments:
+        data["payment_status"] = order.payment_status
+        data["payments"] = [
+            {
+                "id": payment.id,
+                "method": "M-Pesa",
+                "phone_number": payment.phone_number,
+                "amount": str(payment.amount),
+                "status": payment.status,
+                "mpesa_receipt_number": payment.mpesa_receipt_number,
+                "created_at": (
+                    payment.created_at.isoformat()
+                    if payment.created_at else None
+                ),
+                "updated_at": (
+                    payment.updated_at.isoformat()
+                    if payment.updated_at else None
+                )
+            }
+            for payment in order.payments
+        ]
+
+    return data
 
 
 @admin_bp.route("/dashboard", methods=["GET"])
@@ -86,7 +110,7 @@ def order_details(order_id):
         return error_response("Order not found", 404)
 
     return success_response(
-        data=serialize_order(order),
+        data=serialize_order(order, include_payments=True),
         message="Order retrieved successfully"
     )
 
@@ -130,7 +154,7 @@ def change_order_status(order_id):
             send_order_status_update(order, order.status)
 
         return success_response(
-            data=serialize_order(order),
+            data=serialize_order(order, include_payments=True),
             message="Order status updated successfully"
         )
 
