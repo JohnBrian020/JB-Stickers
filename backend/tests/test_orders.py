@@ -201,3 +201,45 @@ def test_cancelled_order_cannot_be_reopened(app):
         product = db.session.get(Product, product_id)
 
         assert product.stock == 10
+
+
+def test_cancelling_order_with_pending_payment_is_rejected(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+        order.payment_status = "pending"
+        db.session.commit()
+
+        with pytest.raises(ValueError, match="pending or unverified"):
+            update_order_status(order, "cancelled")
+
+        product = db.session.get(Product, product_id)
+        order = db.session.get(Order, order.id)
+
+        assert order.status != "cancelled"
+        assert order.payment_status == "pending"
+        assert product.stock == 7
+
+
+def test_cancelling_paid_order_is_rejected(app):
+    with app.app_context():
+        product_id = create_test_product(stock=10)
+
+        order = create_order(
+            make_order_data(product_id, quantity=3)
+        )
+        order.payment_status = "paid"
+        db.session.commit()
+
+        with pytest.raises(ValueError, match="refund is processed"):
+            update_order_status(order, "cancelled")
+
+        product = db.session.get(Product, product_id)
+        order = db.session.get(Order, order.id)
+
+        assert order.status != "cancelled"
+        assert order.payment_status == "paid"
+        assert product.stock == 7

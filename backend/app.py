@@ -23,6 +23,7 @@ from routes.products import products_bp
 from routes.orders import orders_bp
 from routes.auth import auth_bp
 from routes.admin import admin_bp
+from routes.payments import payments_bp
 from utils.responses import error_response
 
 
@@ -61,6 +62,10 @@ def create_app(config_class=Config):
     @app.before_request
     def protect_api_requests():
         if not request.path.startswith("/api/"):
+            return None
+
+        # Safaricom sends server-to-server payment callbacks.
+        if request.path == "/api/payments/callback":
             return None
 
         if request.method in {"GET", "HEAD", "OPTIONS"}:
@@ -116,6 +121,7 @@ def create_app(config_class=Config):
     app.register_blueprint(orders_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(payments_bp)
 
     return app
 

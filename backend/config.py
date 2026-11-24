@@ -98,3 +98,32 @@ class Config:
         raise RuntimeError(
             "A Redis URL must be configured for production rate limiting."
         )
+
+    # Safaricom Daraja M-Pesa configuration
+    MPESA_ENV = os.getenv("MPESA_ENV", "sandbox").strip().lower()
+
+    if MPESA_ENV not in {"sandbox", "production"}:
+        raise RuntimeError(
+            "MPESA_ENV must be either 'sandbox' or 'production'."
+        )
+
+    MPESA_BASE_URL = (
+        "https://api.safaricom.co.ke"
+        if MPESA_ENV == "production"
+        else "https://sandbox.safaricom.co.ke"
+    )
+
+    MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY")
+    MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET")
+    MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE")
+    MPESA_PASSKEY = os.getenv("MPESA_PASSKEY")
+
+    MPESA_CALLBACK_URL = os.getenv(
+        "MPESA_CALLBACK_URL",
+        "https://jb-stickers-api.onrender.com/api/payments/callback"
+    )
+
+    MPESA_TRANSACTION_TYPE = os.getenv(
+        "MPESA_TRANSACTION_TYPE",
+        "CustomerPayBillOnline"
+    )

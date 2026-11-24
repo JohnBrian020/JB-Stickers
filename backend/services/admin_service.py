@@ -88,6 +88,25 @@ def update_order_status(order, new_status):
                 "Cancelled orders cannot be reopened."
             )
 
+        # Do not cancel orders while M-Pesa payment is pending
+        # or its result is still being verified.
+        if (
+            new_status == "cancelled"
+            and locked_order.payment_status == "pending"
+        ):
+            raise ValueError(
+                "Orders with pending or unverified payments cannot be cancelled."
+            )
+
+        # Do not cancel paid orders until a refund process exists.
+        if (
+            new_status == "cancelled"
+            and locked_order.payment_status == "paid"
+        ):
+            raise ValueError(
+                "Paid orders cannot be cancelled before a refund is processed."
+            )
+
         # Do not return stock for orders already shipped or delivered.
         if new_status == "cancelled" and previous_status in {
             "shipped",

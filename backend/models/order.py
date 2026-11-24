@@ -19,6 +19,12 @@ class Order(db.Model):
     total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     status = db.Column(db.String(30), nullable=False, default="pending")
 
+    payment_status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="unpaid"
+    )
+
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -36,6 +42,13 @@ class Order(db.Model):
         db.String(64),
         unique=True,
         nullable=True
+    )
+
+
+    payments = db.relationship(
+        "Payment",
+        back_populates="order",
+        cascade="all, delete-orphan"
     )
 
     def __repr__(self):
