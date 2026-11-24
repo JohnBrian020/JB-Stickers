@@ -110,6 +110,7 @@ def start_stk_push():
 
         payment_id = payment.id
         stk_response = None
+        ids_saved = False
 
         try:
             stk_response = initiate_stk_push(
@@ -123,6 +124,7 @@ def start_stk_push():
             payment.status = "pending"
 
             db.session.commit()
+            ids_saved = True
 
         except (MPesaRejectedError, MPesaNotSentError) as error:
             db.session.rollback()

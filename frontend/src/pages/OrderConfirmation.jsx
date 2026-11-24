@@ -11,6 +11,25 @@ const orderStatuses = [
   { value: 'delivered', label: 'Delivered', description: 'Your order has been delivered.' },
 ]
 
+const paymentMessages = {
+  pending: {
+    title: 'Payment awaiting confirmation',
+    description: 'Check your phone for the M-Pesa prompt. Enter your PIN if prompted. Your order will be marked as paid after Safaricom verifies the transaction.',
+  },
+  paid: {
+    title: 'M-Pesa payment successful',
+    description: 'Your payment has been verified. Thank you for shopping with us!',
+  },
+  failed: {
+    title: 'M-Pesa payment failed',
+    description: 'The payment was unsuccessful. Please contact us for assistance before attempting another payment.',
+  },
+  unknown: {
+    title: 'Payment verification in progress',
+    description: 'We could not confirm the payment result yet. Do not submit another order or make another payment. Refresh this page later.',
+  },
+}
+
 function OrderConfirmation() {
   const { trackingToken } = useParams()
   const location = useLocation()
@@ -51,9 +70,7 @@ function OrderConfirmation() {
         }
       } catch (requestError) {
         if (isActive) {
-          setError(
-            requestError.message || 'Could not retrieve your order.'
-          )
+          setError(requestError.message || 'Could not retrieve your order.')
         }
       } finally {
         if (isActive) {
@@ -68,6 +85,17 @@ function OrderConfirmation() {
       isActive = false
     }
   }, [trackingToken])
+
+  useEffect(() => {
+    if (order?.payment_status !== 'pending' && order?.payment_status !== 'unknown') {
+      return
+    }
+
+    const intervalId = window.setInterval(refreshOrder, 10000)
+
+    return () => window.clearInterval(intervalId)
+  }, [order?.payment_status, refreshOrder])
+
   async function copyTrackingLink() {
     setCopied(false)
 
@@ -105,6 +133,9 @@ function OrderConfirmation() {
   )
   const isCancelled = currentStatus === 'cancelled'
 
+  const paymentStatus = String(order.payment_status || 'pending').toLowerCase()
+  const paymentMessage = paymentMessages[paymentStatus] || paymentMessages.unknown
+
   return (
     <section className="order-confirmation">
       <span className="eyebrow">THANK YOU</span>
@@ -131,6 +162,11 @@ function OrderConfirmation() {
           >
             {refreshing ? 'Refreshing...' : 'Refresh status'}
           </button>
+        </div>
+
+        <div className={`payment-status payment-status-${paymentStatus}`} aria-live="polite">
+          <h3>{paymentMessage.title}</h3>
+          <p>{paymentMessage.description}</p>
         </div>
 
         {error && (
@@ -232,4 +268,3 @@ function OrderConfirmation() {
 }
 
 export default OrderConfirmation
-

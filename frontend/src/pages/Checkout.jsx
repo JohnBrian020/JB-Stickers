@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
-import { createOrder } from '../services/orderService'
+import { initiateMpesaPayment } from '../services/orderService'
 
 function Checkout() {
   const { cartItems, cartTotal, clearCart } = useCart()
@@ -35,6 +35,11 @@ function Checkout() {
       return
     }
 
+    if (!Number.isInteger(Number(cartTotal)) || Number(cartTotal) <= 0) {
+      setError('M-Pesa payments require a positive whole-number KSh amount.')
+      return
+    }
+
     setSubmitting(true)
     setError('')
 
@@ -47,17 +52,26 @@ function Checkout() {
     }
 
     try {
-      const order = await createOrder(orderData)
+      const payment = await initiateMpesaPayment(orderData)
+
+      if (!payment?.tracking_token) {
+        throw new Error(
+          'The payment response did not include a tracking link. Please contact us before submitting another order.'
+        )
+      }
 
       clearCart()
 
-      navigate(`/order-confirmation/${order.tracking_token}`, {
-        state: { order },
+      navigate(`/order-confirmation/${payment.tracking_token}`, {
+        state: {
+          order: payment,
+          paymentInitiated: true,
+        },
       })
     } catch (requestError) {
       setError(
         requestError.message ||
-        'We could not place your order. Please try again.'
+        'We could not confirm your payment request. If you already received an M-Pesa prompt, do not submit another order. Please contact us for assistance.'
       )
     } finally {
       setSubmitting(false)
@@ -80,7 +94,7 @@ function Checkout() {
     <section className="checkout-page">
       <span className="eyebrow">ALMOST YOURS</span>
       <h1>Checkout</h1>
-      <p>Enter your details to complete your order.</p>
+      <p>Enter your details and pay securely using M-Pesa.</p>
 
       <div className="checkout-layout">
         <form className="checkout-form" onSubmit={handleSubmit}>
@@ -108,13 +122,14 @@ function Checkout() {
             required
           />
 
-          <label htmlFor="phone">Phone number</label>
+          <label htmlFor="phone">M-Pesa phone number</label>
           <input
             id="phone"
             name="phone"
             type="tel"
             value={formData.phone}
             onChange={handleChange}
+            placeholder="07XXXXXXXX or 2547XXXXXXXX"
             minLength={7}
             maxLength={30}
             required
@@ -131,6 +146,19 @@ function Checkout() {
             required
           />
 
+          <div className="checkout-payment-info">
+            <h3>Payment method: M-Pesa</h3>
+            <p>
+              After submitting your order, an STK Push payment
+              request will be sent to your phone. Enter your
+              M-Pesa PIN to complete the payment.
+            </p>
+            <p>
+              Your order will only be marked as paid after
+              Safaricom verifies the transaction.
+            </p>
+          </div>
+
           {error && (
             <p className="checkout-error" role="alert">
               {error}
@@ -142,7 +170,7 @@ function Checkout() {
             className="product-add-button"
             disabled={submitting}
           >
-            {submitting ? 'Placing order...' : 'Place order'}
+            {submitting ? 'Requesting payment...' : 'Pay with M-Pesa'}
           </button>
 
           <Link to="/cart" className="back-to-shop">
@@ -170,8 +198,8 @@ function Checkout() {
           </div>
 
           <p className="checkout-note">
-            Final prices and stock availability are verified when your
-            order is submitted.
+            Final prices and stock availability are verified
+            when your order is submitted.
           </p>
         </aside>
       </div>

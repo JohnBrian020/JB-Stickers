@@ -9,6 +9,15 @@ export async function createOrder(orderData) {
   return response.data
 }
 
+export async function initiateMpesaPayment(orderData) {
+  const response = await apiRequest('/payments/stk-push', {
+    method: 'POST',
+    body: JSON.stringify(orderData),
+  })
+
+  return response.data
+}
+
 export async function getTrackedOrder(trackingToken) {
   const response = await apiRequest(
     `/orders/track/${encodeURIComponent(trackingToken)}`

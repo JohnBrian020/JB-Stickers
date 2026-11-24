@@ -1240,3 +1240,49 @@ button {
 .admin-login-page .admin-login-form label {
   color: inherit;
 }
+
+/* M-Pesa payment status */
+.payment-status {
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid var(--border-color, #444);
+  border-radius: 10px;
+  background: var(--card-background, #171717);
+}
+
+.payment-status h3 {
+  margin: 0 0 8px;
+}
+
+.payment-status p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.payment-status-pending,
+.payment-status-unknown {
+  border-color: #b88632;
+}
+
+.payment-status-paid {
+  border-color: #269b62;
+}
+
+.payment-status-failed {
+  border-color: #b94a48;
+}
+
+.checkout-payment-info {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--border-color, #444);
+  border-radius: 8px;
+}
+
+.checkout-payment-info h3 {
+  margin-top: 0;
+}
+
+.checkout-payment-info p {
+  line-height: 1.6;
+}
